@@ -1,22 +1,3 @@
-// import Order from "../models/Order.js";
-
-// export const createOrder = async (req, res) => {
-//   try {
-//     const { cart, formData, totalPrice } = req.body;
-
-//     if (!cart || cart.length === 0) {
-//       return res.status(400).json({ message: "Cart is empty" });
-//     }
-
-//     const newOrder = new Order({ cart, formData, totalPrice });
-//     await newOrder.save();
-
-//     res.status(201).json({ message: "Order placed successfully", order: newOrder });
-//   } catch (err) {
-//     res.status(500).json({ message: "Error placing order", error: err.message });
-//   }
-// };
-
 import Order from "../models/Order.js";
 
 // ✅ CREATE Order (POST)
