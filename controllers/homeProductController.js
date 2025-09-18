@@ -10,10 +10,20 @@ export const getHomeProducts = async (req, res) => {
   }
 };
 
-// ✅ Add new product
+// ✅ Add new product (with image)
 export const addHomeProduct = async (req, res) => {
   try {
-    const newProduct = new HomeProduct(req.body);
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : "/default.jpg";
+
+    const newProduct = new HomeProduct({
+      title: req.body.title,
+      category: req.body.category || "Home Products",
+      price: req.body.price,
+      image: imagePath,
+      rating: 0,
+      reviews: 0,
+    });
+
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (err) {
@@ -24,7 +34,10 @@ export const addHomeProduct = async (req, res) => {
 // ✅ Update product
 export const updateHomeProduct = async (req, res) => {
   try {
-    const updated = await HomeProduct.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+    if (req.file) updateData.image = `/uploads/${req.file.filename}`;
+
+    const updated = await HomeProduct.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });

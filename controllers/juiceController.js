@@ -1,5 +1,4 @@
-import Juice from "../models/Juice.js";
-
+import Juice from "../models/juiceModel.js";
 // ✅ Get all juices
 export const getJuices = async (req, res) => {
   try {
@@ -21,10 +20,20 @@ export const getJuice = async (req, res) => {
   }
 };
 
-// ✅ Create juice
+// ✅ Create juice with image upload
 export const addJuice = async (req, res) => {
-  const juice = new Juice(req.body);
   try {
+    const { title, price, category } = req.body;
+
+    const juice = new Juice({
+      title,
+      price,
+      category: category || "Juices",
+      rating: 0,
+      reviews: 0,
+      image: req.file ? `/uploads/${req.file.filename}` : "/default.jpg",
+    });
+
     const newJuice = await juice.save();
     res.status(201).json(newJuice);
   } catch (err) {
@@ -35,11 +44,17 @@ export const addJuice = async (req, res) => {
 // ✅ Update juice
 export const updateJuice = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+
     const updatedJuice = await Juice.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
+
     if (!updatedJuice) return res.status(404).json({ message: "Juice not found" });
     res.json(updatedJuice);
   } catch (err) {
