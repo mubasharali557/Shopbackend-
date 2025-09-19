@@ -1,4 +1,5 @@
-import express from "express";
+ import express from "express";
+import multer from "multer";
 import {
   getSkinCare,
   addSkinCare,
@@ -8,16 +9,17 @@ import {
 
 const router = express.Router();
 
-// GET all
+// ✅ Multer config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+const upload = multer({ storage });
+
+// Routes
 router.get("/", getSkinCare);
-
-// POST new
-router.post("/", addSkinCare);
-
-// PUT update
-router.put("/:id", updateSkinCare);
-
-// DELETE
+router.post("/", upload.single("image"), addSkinCare); // POST with image
+router.put("/:id", upload.single("image"), updateSkinCare); // PUT with image
 router.delete("/:id", deleteSkinCare);
 
 export default router;

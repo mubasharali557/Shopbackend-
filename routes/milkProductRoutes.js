@@ -1,4 +1,6 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
 import {
   getMilkProducts,
   getMilkProductById,
@@ -9,19 +11,34 @@ import {
 
 const router = express.Router();
 
-// GET all
+// 👉 Multer Storage Config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save in uploads folder
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      Date.now() + path.extname(file.originalname) // unique name
+    );
+  },
+});
+
+const upload = multer({ storage });
+
+// ✅ Get All
 router.get("/", getMilkProducts);
 
-// GET single by ID
+// ✅ Get By ID
 router.get("/:id", getMilkProductById);
 
-// POST new
-router.post("/", addMilkProduct);
+// ✅ Add Product with Image
+router.post("/", upload.single("image"), addMilkProduct);
 
-// PUT update by ID
-router.put("/:id", updateMilkProduct);
+// ✅ Update Product (optional: allow image upload)
+router.put("/:id", upload.single("image"), updateMilkProduct);
 
-// DELETE by ID
+// ✅ Delete Product
 router.delete("/:id", deleteMilkProduct);
 
 export default router;

@@ -1,6 +1,21 @@
-import Product from "../models/Product.js";
 
-// GET all products
+import Product from "../models/Product.js";
+import multer from "multer";
+import path from "path";
+
+// ✅ Configure Multer storage for image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Make sure this folder exists at root
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+
+export const upload = multer({ storage });
+
+// ✅ Get all products
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
@@ -10,7 +25,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-// GET product by ID
+// ✅ Get single product by ID
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -21,11 +36,24 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// ADD product
+// ✅ Add new product (supports multiple image uploads)
 export const addProduct = async (req, res) => {
   try {
-    const { title, images, category, price, oldPrice, rating, reviews } = req.body;
-    const newProduct = new Product({ title, images, category, price, oldPrice, rating, reviews });
+    const { title, category, price, oldPrice, rating, reviews } = req.body;
+
+    // handle multiple images uploaded via Multer
+    const images = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
+
+    const newProduct = new Product({
+      title,
+      category,
+      price,
+      oldPrice,
+      rating,
+      reviews,
+      images,
+    });
+
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (err) {
@@ -33,14 +61,20 @@ export const addProduct = async (req, res) => {
   }
 };
 
-// UPDATE product (full update)
+// ✅ Update product (full update)
 export const updateProduct = async (req, res) => {
   try {
-    const { title, images, category, price, oldPrice, rating, reviews } = req.body;
+    const { title, category, price, oldPrice, rating, reviews } = req.body;
+
+    // If images are uploaded, map them, else keep existing images
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map((file) => `/uploads/${file.filename}`);
+    }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      { title, images, category, price, oldPrice, rating, reviews },
+      { title, category, price, oldPrice, rating, reviews, ...(images.length > 0 && { images }) },
       { new: true, runValidators: true }
     );
 
@@ -51,14 +85,20 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-// UPDATE only price & images (PATCH)
+// ✅ Update only price & images (PATCH)
 export const updatePriceImage = async (req, res) => {
   try {
-    const { price, oldPrice, images } = req.body;
+    const { price, oldPrice } = req.body;
+
+    // If images are uploaded, map them
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map((file) => `/uploads/${file.filename}`);
+    }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      { price, oldPrice, images },
+      { price, oldPrice, ...(images.length > 0 && { images }) },
       { new: true, runValidators: true }
     );
 
@@ -69,7 +109,7 @@ export const updatePriceImage = async (req, res) => {
   }
 };
 
-// DELETE product
+// ✅ Delete product
 export const deleteProduct = async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);

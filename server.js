@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 
 // Routes
@@ -22,31 +23,32 @@ import juiceRoutes from "./routes/juiceRoutes.js";
 dotenv.config();
 const app = express();
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // for parsing form data
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-// 👉 Serve uploaded images
+// 👉 Setup uploads folder
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
-
-
-// Ensure uploads folder exists
-import fs from "fs";
 const uploadDir = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+
+// Create uploads folder if it doesn’t exist
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
   console.log("✅ Created uploads folder");
 }
 
-// Routes
+// 👉 Serve uploaded images (http://localhost:5000/uploads/filename.jpg)
+app.use("/uploads", express.static(uploadDir));
+
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api", orderRoutes);
+app.use("/api/orders", orderRoutes);
 app.use("/api/milk-products", milkProductRoutes);
 app.use("/api/body-washes", bodyWashRoutes);
 app.use("/api/toothbrushes", toothBrushRoutes);
@@ -56,7 +58,7 @@ app.use("/api/skincare", skinCareRoutes);
 app.use("/api/house-products", houseProductRoutes);
 app.use("/api/juices", juiceRoutes);
 
-// DB Connection
+// ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -64,6 +66,9 @@ mongoose
   })
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on http://localhost:${PORT}`)
+    );
   })
-  .catch((err) => console.error("MongoDB Error:", err));
+  .catch((err) => console.error("❌ MongoDB Error:", err));

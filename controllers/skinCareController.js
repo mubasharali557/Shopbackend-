@@ -1,5 +1,4 @@
 import SkinCare from "../models/SkinCare.js";
-
 // ✅ Get all skin care products
 export const getSkinCare = async (req, res) => {
   try {
@@ -10,18 +9,18 @@ export const getSkinCare = async (req, res) => {
   }
 };
 
-// ✅ Add new product
+// ✅ Add new product with image upload
 export const addSkinCare = async (req, res) => {
-  const { title, image, category, price, rating, reviews } = req.body;
-
   try {
+    const { title, category, price, rating, reviews } = req.body;
+
     const newProduct = new SkinCare({
       title,
-      image,
-      category,
+      category: category || "SkinCare",
       price,
-      rating,
-      reviews
+      rating: rating || 0,
+      reviews: reviews || 0,
+      image: req.file ? `/uploads/${req.file.filename}` : req.body.image, // handle file upload
     });
 
     await newProduct.save();
@@ -31,14 +30,19 @@ export const addSkinCare = async (req, res) => {
   }
 };
 
-// ✅ Update product
+// ✅ Update product with image upload
 export const updateSkinCare = async (req, res) => {
   try {
-    const updatedProduct = await SkinCare.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedData = {
+      ...req.body,
+      image: req.file ? `/uploads/${req.file.filename}` : req.body.image,
+    };
+
+    const updatedProduct = await SkinCare.findByIdAndUpdate(req.params.id, updatedData, {
+      new: true,
+    });
+
+    if (!updatedProduct) return res.status(404).json({ message: "Product not found" });
     res.json(updatedProduct);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -48,8 +52,9 @@ export const updateSkinCare = async (req, res) => {
 // ✅ Delete product
 export const deleteSkinCare = async (req, res) => {
   try {
-    await SkinCare.findByIdAndDelete(req.params.id);
-    res.json({ message: "Product deleted" });
+    const deletedProduct = await SkinCare.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) return res.status(404).json({ message: "Product not found" });
+    res.json({ message: "Product deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

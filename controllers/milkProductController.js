@@ -24,7 +24,17 @@ export const getMilkProductById = async (req, res) => {
 // ✅ Add new milk product
 export const addMilkProduct = async (req, res) => {
   try {
-    const milkProduct = new MilkProduct(req.body);
+    const { title, price, category, rating, reviews } = req.body;
+
+    const milkProduct = new MilkProduct({
+      title,
+      price,
+      category,
+      rating,
+      reviews,
+      image: req.file ? `/uploads/${req.file.filename}` : null, // Save image URL
+    });
+
     const savedProduct = await milkProduct.save();
     res.status(201).json(savedProduct);
   } catch (err) {
@@ -32,14 +42,20 @@ export const addMilkProduct = async (req, res) => {
   }
 };
 
-// ✅ Update milk product (PUT)
+// ✅ Update milk product
 export const updateMilkProduct = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+
     const updatedProduct = await MilkProduct.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
+
     if (!updatedProduct) return res.status(404).json({ message: "Milk product not found" });
     res.json(updatedProduct);
   } catch (err) {
@@ -47,7 +63,7 @@ export const updateMilkProduct = async (req, res) => {
   }
 };
 
-// ✅ Delete milk product (DELETE)
+// ✅ Delete milk product
 export const deleteMilkProduct = async (req, res) => {
   try {
     const deletedProduct = await MilkProduct.findByIdAndDelete(req.params.id);

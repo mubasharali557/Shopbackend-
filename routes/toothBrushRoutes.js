@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   getToothBrushes,
   getToothBrushById,
@@ -9,11 +10,23 @@ import {
 
 const router = express.Router();
 
-// CRUD Routes
-router.get("/", getToothBrushes);       // GET all
-router.get("/:id", getToothBrushById); // GET one
-router.post("/", addToothBrush);       // POST create
-router.put("/:id", updateToothBrush);  // PUT update
-router.delete("/:id", deleteToothBrush); // DELETE
+// ✅ Multer Storage Config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // save to /uploads
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname); // unique filename
+  },
+});
+
+const upload = multer({ storage });
+
+// ✅ CRUD Routes
+router.get("/", getToothBrushes);             // GET all
+router.get("/:id", getToothBrushById);        // GET one
+router.post("/", upload.single("image"), addToothBrush); // ✅ POST with image upload
+router.put("/:id", upload.single("image"), updateToothBrush); // ✅ PUT with image upload
+router.delete("/:id", deleteToothBrush);      // DELETE
 
 export default router;

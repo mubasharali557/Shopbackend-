@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
-const HouseProductSchema = new mongoose.Schema({
+const houseProductSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  image: { type: String, default: "/default.jpg" },
-  category: { type: String, default: "House Cleaning" },
   price: { type: Number, required: true },
-  rating: { type: Number, default: 0 },
-  reviews: { type: Number, default: 0 },
-}, { timestamps: true });
+  category: { type: String, default: "House Products" },
+  customer: { type: String, default: "Guest" },
+  status: { type: String, enum: ["Pending", "Shipped", "Delivered"], default: "Pending" },
+  image: { type: String },
+});
 
-export default mongoose.models.HouseProduct || mongoose.model("HouseProduct", HouseProductSchema);
+export default mongoose.model("HouseProduct", houseProductSchema);

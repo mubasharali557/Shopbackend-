@@ -1,5 +1,4 @@
 import HouseProduct from "../models/HouseProduct.js";
-
 // ✅ Get all products
 export const getHouseProducts = async (req, res) => {
   try {
@@ -10,49 +9,33 @@ export const getHouseProducts = async (req, res) => {
   }
 };
 
-// ✅ Get a single product by ID
-export const getHouseProductById = async (req, res) => {
-  try {
-    const product = await HouseProduct.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// ✅ Add a new product
+// ✅ Add new product (with image + status + customer)
 export const addHouseProduct = async (req, res) => {
   try {
-    const product = new HouseProduct(req.body);
-    const savedProduct = await product.save();
-    res.status(201).json(savedProduct);
+    const { title, price, category, status, customer } = req.body;
+
+    const newProduct = new HouseProduct({
+      title,
+      price,
+      category,
+      status: status || "Pending",
+      customer: customer || "Guest",
+      image: req.file ? `uploads/${req.file.filename}` : null,
+    });
+
+    const saved = await newProduct.save();
+    res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
 
-// ✅ Update a product by ID
-export const updateHouseProduct = async (req, res) => {
-  try {
-    const updatedProduct = await HouseProduct.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedProduct) return res.status(404).json({ message: "Product not found" });
-    res.json(updatedProduct);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-// ✅ Delete a product by ID
+// ✅ Delete product
 export const deleteHouseProduct = async (req, res) => {
   try {
     const deleted = await HouseProduct.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Product not found" });
-    res.json({ message: "Product deleted" });
+    res.json({ message: "Product deleted", deleted });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
