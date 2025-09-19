@@ -5,7 +5,6 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-
 // Routes
 import authRoutes from "./routes/authRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
@@ -19,7 +18,6 @@ import cookingOilRoutes from "./routes/cookingOilRoutes.js";
 import skinCareRoutes from "./routes/skinCareRoutes.js";
 import houseProductRoutes from "./routes/houseProductRoutes.js";
 import juiceRoutes from "./routes/juiceRoutes.js";
-
 dotenv.config();
 const app = express();
 
@@ -28,27 +26,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-// 👉 Setup uploads folder
+// ✅ File Uploads setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDir = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-
-// Create uploads folder if it doesn’t exist
+// Create uploads folder if missing
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
   console.log("✅ Created uploads folder");
 }
 
-// 👉 Serve uploaded images (http://localhost:5000/uploads/filename.jpg)
+// Serve uploaded images → http://localhost:5000/uploads/filename.jpg
 app.use("/uploads", express.static(uploadDir));
 
-// ✅ Routes
+// ✅ API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/orders", orderRoutes);          // 👈 Orders route
 app.use("/api/milk-products", milkProductRoutes);
 app.use("/api/body-washes", bodyWashRoutes);
 app.use("/api/toothbrushes", toothBrushRoutes);

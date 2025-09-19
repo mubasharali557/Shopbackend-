@@ -1,6 +1,5 @@
 import HomeProduct from "../models/HomeProduct.js";
-
-// ✅ Get all home products
+// GET all products
 export const getHomeProducts = async (req, res) => {
   try {
     const products = await HomeProduct.find();
@@ -10,7 +9,7 @@ export const getHomeProducts = async (req, res) => {
   }
 };
 
-// ✅ Add new product (with image)
+// ADD product with image
 export const addHomeProduct = async (req, res) => {
   try {
     const imagePath = req.file ? `/uploads/${req.file.filename}` : "/default.jpg";
@@ -31,7 +30,7 @@ export const addHomeProduct = async (req, res) => {
   }
 };
 
-// ✅ Update product
+// UPDATE product
 export const updateHomeProduct = async (req, res) => {
   try {
     const updateData = { ...req.body };
@@ -44,7 +43,7 @@ export const updateHomeProduct = async (req, res) => {
   }
 };
 
-// ✅ Delete product
+// DELETE product
 export const deleteHomeProduct = async (req, res) => {
   try {
     await HomeProduct.findByIdAndDelete(req.params.id);

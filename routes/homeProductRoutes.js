@@ -10,19 +10,18 @@ import {
 
 const router = express.Router();
 
-// ✅ Multer storage
+// Multer config
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(process.cwd(), "public/uploads"));
-  },
+  destination: (req, file, cb) => cb(null, path.join(process.cwd(), "public/uploads")),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
+
 const upload = multer({ storage });
 
-// ✅ Routes
+// Routes
 router.get("/", getHomeProducts);
 router.post("/", upload.single("image"), addHomeProduct);
 router.put("/:id", upload.single("image"), updateHomeProduct);
